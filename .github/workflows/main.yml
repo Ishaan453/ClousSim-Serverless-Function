@@ -20,10 +20,11 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
 
-      - name: Build with Maven
-        run: mvn clean compile
+      - name: Compile AWS_Lambda_Simulation.java with JAR dependencies
+        run: |
+          mkdir -p out
+          javac -cp "lib/*" -d out src/cloudsim/simulations/AWS_Lambda_Simulation.java
 
       - name: Run AWS_Lambda_Simulation
         run: |
-          java -cp "lib/*" src/cloudsim/simulations/AWS_Lambda_Simulation.java
-
+          java -cp "out:lib/*" cloudsim.simulations.AWS_Lambda_Simulation
