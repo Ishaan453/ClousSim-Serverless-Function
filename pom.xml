@@ -39,20 +39,35 @@
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
+    <plugins>
+        <!-- Compiler Plugin -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+        </plugin>
 
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <mainClass>org.cloudbus.cloudsim.examples.AWS_Lambda_Simulation</mainClass>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+        <!-- Executable JAR -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <mainClass>org.cloudbus.cloudsim.examples.AWS_Lambda_Simulation</mainClass>
+                    </manifest>
+                </archive>
+            </configuration>
+        </plugin>
+
+        <!-- Exec Plugin (optional if running without jar) -->
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+                <mainClass>org.cloudbus.cloudsim.examples.AWS_Lambda_Simulation</mainClass>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
 </project>
