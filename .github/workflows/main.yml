@@ -29,7 +29,7 @@ jobs:
       run: mvn test
       
     - name: Store JAR artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: cloudsim-lambda-simulation-jar
         path: target/*.jar
@@ -40,7 +40,7 @@ jobs:
         java -jar target/*.jar > reports/simulation-output.txt
       
     - name: Store report artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: simulation-report
         path: reports/
