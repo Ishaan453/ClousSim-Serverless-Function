@@ -25,4 +25,4 @@ jobs:
 
       - name: Run AWS_Lambda_Simulation
         run: |
-          java -cp "target/classes:lib/*" org.cloudbus.cloudsim.examples.AWS_Lambda_Simulation
+          java -cp "target/classes:lib/*" cloudsim.simulations.AWS_Lambda_Simulation
