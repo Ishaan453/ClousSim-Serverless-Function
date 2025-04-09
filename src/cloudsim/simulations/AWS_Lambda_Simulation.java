@@ -1,4 +1,4 @@
-package cloudsim.simulations;
+package org.cloudbus.cloudsim.examples;
 
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -67,7 +67,7 @@ public class AWS_Lambda_Simulation {
                 int functionType = info.getFunctionType();
                 currentTime = info.getExecutionTime();  // Simulation time for this execution
                 
-                System.out.println("\n⏰ Time: " + currentTime + " - Processing function execution for cloudlet " + 
+                System.out.println("\nTime: " + currentTime + " - Processing function execution for cloudlet " + 
                                  cloudlet.getCloudletId() + " (Function Type: " + functionType + ")");
                 
                 // Check for warm instances of this function
@@ -98,7 +98,7 @@ public class AWS_Lambda_Simulation {
                             
                             if (selectedVm != null && (currentMemoryUsage + memoryNeeded) <= selectedVm.getRam()) {
                                 // We have enough memory on this warm VM
-                                System.out.println("♨️ Found warm VM " + candidateVmId + " for function " + functionType + 
+                                System.out.println("Found warm VM " + candidateVmId + " for function " + functionType + 
                                                 " (last execution: " + lastExecutionTime + ", elapsed: " + 
                                                 (currentTime - lastExecutionTime) + "s)");
                                 
@@ -107,7 +107,7 @@ public class AWS_Lambda_Simulation {
                                 warmStartStatus.put(cloudlet.getCloudletId(), true);
                                 break;
                             } else {
-                                System.out.println("⚠️ Found warm VM " + candidateVmId + " but insufficient memory");
+                                System.out.println("Found warm VM " + candidateVmId + " but insufficient memory");
                             }
                         }
                     }
@@ -131,7 +131,7 @@ public class AWS_Lambda_Simulation {
                     
                     // If no VM with enough memory, create new VM
                     if (!vmFound) {
-                        System.out.println("🆕 Creating new VM " + nextVmId + " due to memory constraints");
+                        System.out.println("Creating new VM " + nextVmId + " due to memory constraints");
                         
                         // Create new VM
                         Vm newVm = new Vm(nextVmId, brokerId, 1000, 2, 1024, 10000, 10000, "Xen", new CloudletSchedulerTimeShared());
@@ -152,7 +152,7 @@ public class AWS_Lambda_Simulation {
                         nextVmId++;
                     }
                     
-                    System.out.println("❄️ Cold start: Allocating function " + functionType + " to VM " + vmId);
+                    System.out.println("Cold start: Allocating function " + functionType + " to VM " + vmId);
                     warmStartStatus.put(cloudlet.getCloudletId(), false);
                 }
                 
@@ -184,7 +184,7 @@ public class AWS_Lambda_Simulation {
                 double currentMemoryUsage = calculateCurrentMemoryUsage(currentTime, vmMemoryUsage.get(vmId));
                 double totalMemory = 1024; // Standard VM RAM
                 double memoryPercentage = (currentMemoryUsage / totalMemory) * 100;
-                System.out.println("📊 VM " + vmId + " memory usage: " + 
+                System.out.println("VM " + vmId + " memory usage: " + 
                                  String.format("%.2f", currentMemoryUsage) + "MB / " + 
                                  totalMemory + "MB (" + String.format("%.1f", memoryPercentage) + "%)");
                 
@@ -214,49 +214,6 @@ public class AWS_Lambda_Simulation {
             // Print results
             List<Cloudlet> finishedCloudlets = broker.getCloudletReceivedList();
             System.out.println("Simulation completed.");
-            printCloudSimResults(finishedCloudlets);
-            
-            // Print our custom results
-            printCustomResults(executionSchedule);
-            
-            // Print VM statistics
-            System.out.println("\n=================== VM STATISTICS ===================");
-            System.out.println("Total VMs created: " + vmList.size());
-            System.out.println("+------+---------------+---------------+");
-            System.out.println("| VM   | Functions Run | Peak Memory % |");
-            System.out.println("+------+---------------+---------------+");
-            
-            for (Vm vm : vmList) {
-                int functionsRun = 0;
-                double peakMemory = 0;
-                List<MemoryUsageRecord> records = vmMemoryUsage.get(vm.getId());
-                
-                // Count functions run on this VM
-                for (CloudletExecutionInfo info : executionSchedule) {
-                    if (info.getVmId() == vm.getId()) {
-                        functionsRun++;
-                    }
-                }
-                
-                // Calculate peak memory usage
-                if (records != null && !records.isEmpty()) {
-                    double currentUsage = 0;
-                    for (MemoryUsageRecord record : records) {
-                        if (record.isStart()) {
-                            currentUsage += record.getMemoryUsage();
-                        } else {
-                            currentUsage -= record.getMemoryUsage();
-                        }
-                        peakMemory = Math.max(peakMemory, currentUsage);
-                    }
-                }
-                
-                double peakPercentage = (peakMemory / vm.getRam()) * 100;
-                System.out.format("| %-4d | %-13d | %-12.1f%% |\n", 
-                    vm.getId(), functionsRun, peakPercentage);
-            }
-            
-            System.out.println("+------+---------------+---------------+");
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -267,7 +224,7 @@ public class AWS_Lambda_Simulation {
         List<CloudletExecutionInfo> executionSchedule = new ArrayList<>();
         
         // Initial cloudlets (6 cloudlets at time 0)
-        for (int i = 0; i <= 5; i++) {
+        for (int i = 0; i <= 4; i++) {
             Cloudlet cloudlet = createCloudlet(i, brokerId);
             executionSchedule.add(new CloudletExecutionInfo(cloudlet, 0, i));
         }
@@ -360,56 +317,6 @@ public class AWS_Lambda_Simulation {
         }
         
         return Math.max(0, totalUsage); // Ensure we don't have negative memory
-    }
-
-    private static void printCloudSimResults(List<Cloudlet> finishedCloudlets) {
-        System.out.println("\n=================== CLOUDSIM EXECUTION RESULTS ===================");
-        System.out.println("+----------+----------+--------+------------+------------+-----------+");
-        System.out.println("| Cloudlet | Status   | VM ID  | Start Time | Finish Time| Exec Time |");
-        System.out.println("+----------+----------+--------+------------+------------+-----------+");
-
-        DecimalFormat dft = new DecimalFormat("###.##");
-        for (Cloudlet cloudlet : finishedCloudlets) {
-            System.out.print("| " + cloudlet.getCloudletId() + "\t");
-            
-            if (cloudlet.getCloudletStatus() == Cloudlet.SUCCESS) {
-                System.out.print("| SUCCESS\t");
-                System.out.print("| " + cloudlet.getVmId() + "\t");
-                System.out.print("| " + dft.format(cloudlet.getExecStartTime()) + "\t");
-                System.out.print("| " + dft.format(cloudlet.getFinishTime()) + "\t");
-                System.out.print("| " + dft.format(cloudlet.getActualCPUTime()) + "\t");
-                System.out.println("|");
-            } else {
-                System.out.println("| " + cloudlet.getCloudletStatusString() + "\t");
-            }
-        }
-        System.out.println("+----------+----------+--------+------------+------------+-----------+");
-    }
-    
-    private static void printCustomResults(List<CloudletExecutionInfo> executionSchedule) {
-        System.out.println("\n=================== CLOUDLET EXECUTION RESULTS ===================");
-        System.out.println("+----------+--------------+---------+------------+------------+---------------+---------------+");
-        System.out.println("| Cloudlet | Function Type| VM Used | Start Time | Finish Time| Execution Time| Warm Start?   |");
-        System.out.println("+----------+--------------+---------+------------+------------+---------------+---------------+");
-        
-        // Use our tracked execution info to print results
-        for (CloudletExecutionInfo info : executionSchedule) {
-            Cloudlet cloudlet = info.getCloudlet();
-            int cloudletId = cloudlet.getCloudletId();
-            double startTime = info.getExecutionTime();
-            double finishTime = info.getFinishTime();
-            
-            System.out.format("| %-8d | %-12d | %-7d | %-10.1f | %-10.1f | %-13.1f | %-13s |\n", 
-                    cloudletId, 
-                    info.getFunctionType(),
-                    info.getVmId(),
-                    startTime,
-                    finishTime,
-                    finishTime - startTime,
-                    info.isWarmStart() ? "Yes" : "No");
-        }
-        
-        System.out.println("+----------+--------------+---------+------------+------------+---------------+---------------+");
     }
     
     /**
